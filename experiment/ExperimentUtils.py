@@ -7,8 +7,8 @@ class ExperimentUtils:
     @staticmethod
     def band_cholesky(matrix):
         """
-        Cholesky decomposition for symmetric positive definite band matrix
-        Returns: (L, L^T) where L is lower triangular band matrix with same bandwidth
+        Разложение Холецкого для симметричной положительно определенной ленточной матрицы
+        Возвращает: (L, L^T) где L - нижняя треугольная ленточная матрица с той же шириной ленты
         """
         if matrix.bandwidth % 2 != 1:
             raise ValueError("Matrix must have odd bandwidth for symmetric storage")
