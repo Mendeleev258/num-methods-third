@@ -60,18 +60,6 @@ class ExperimentUtils:
         return L
 
     @staticmethod
-    def is_symmetric(matrix, tolerance=1e-10):
-        """
-        Проверяет, является ли ленточная матрица симметричной
-        """
-        n = matrix.size
-        for i in range(1, n + 1):
-            for j in range(1, n + 1):
-                if abs(matrix[i, j] - matrix[j, i]) > tolerance:
-                    return False
-        return True
-
-    @staticmethod
     def solve_cholesky_band(matrix, exact_x):
         """
         Решает Ax = b с использованием разложения Холецкого для ленточной матрицы
@@ -80,17 +68,6 @@ class ExperimentUtils:
         2. Решаем L * y = b (прямая подстановка)
         3. Решаем L^T * x = y (обратная подстановка)
         """
-        # Проверяем, является ли матрица симметричной (требуется для разложения Холецкого)
-        if not ExperimentUtils.is_symmetric(matrix):
-            print("Предупреждение: Матрица не симметрична. Разложение Холецкого требует симметричную матрицу.")
-            # Пытаемся сделать её симметричной, усредняя с транспонированной
-            # Работаем только в пределах ленты, чтобы избежать ошибок выхода за границы
-            for i in range(1, matrix.size + 1):
-                for j in range(i + 1, min(matrix.size + 1, i + matrix.k + 1)):  # Только в пределах ленты
-                    if abs(j - i) <= matrix.k:  # В пределах ширины ленты
-                        avg_val = (matrix[i, j] + matrix[j, i]) / 2
-                        matrix[i, j] = avg_val
-                        matrix[j, i] = avg_val
 
         # Генерируем известный вектор правой части b = A * exact_x
         b = matrix @ exact_x
