@@ -13,11 +13,11 @@ class TapeMatrix:
                       bandwidth = 2k + 1, где k - количество диагоналей над/под главной диагональю
         """
         if bandwidth % 2 == 0:
-            raise ValueError("Bandwidth must be an odd number (3, 5, 7...)")
+            raise ValueError("Ширина ленты должна быть нечетным числом (3, 5, 7...)")
         
         self.size = size
         self.bandwidth = bandwidth
-        self.k = (bandwidth - 1) // 2  # number of diagonals above/below main
+        self.k = (bandwidth - 1) // 2  # количество диагоналей над/под главной
         
         # Хранение диагоналей в списке
         # diagonals[0] = главная диагональ (b)
@@ -26,7 +26,7 @@ class TapeMatrix:
         # и т.д.
         self.diagonals = []
         for i in range(bandwidth):
-            # Determine which diagonal this is
+            # Определяем, какая это диагональ
             diag_index = i - self.k  # -k, -k+1, ..., 0, ..., k-1, k
             diag_len = self._get_diagonal_length(diag_index)
             self.diagonals.append(v.Vector(size=diag_len))
@@ -40,15 +40,15 @@ class TapeMatrix:
         """
         offset = col - row
         if abs(offset) > self.k:
-            return None, None  # Outside band
+            return None, None  # Вне ленты
         
-        # Convert offset to diagonal index in list
+        # Преобразуем смещение в индекс диагонали в списке
         diag_idx = offset + self.k
         
         # Position along diagonal
         if offset <= 0:  # Main or lower diagonal
             position = col
-        else:  # Upper diagonal
+        else:  # Верхняя диагональ
             position = row
         
         return diag_idx, position
@@ -98,12 +98,10 @@ class TapeMatrix:
     def __add__(self, other):
         """Сложение ленточных матриц"""
         if self.size != other.size or self.bandwidth != other.bandwidth:
-            raise ValueError("Matrix sizes or bandwidths don't match for addition")
+            raise ValueError("Размеры матриц или ширины ленты не совпадают для сложения")
         
         result = TapeMatrix(self.size, self.bandwidth)
         for i in range(self.bandwidth):
-            # Assuming both matrices store diagonals in same order
-            # Simple element-wise addition
             for j in range(1, len(self.diagonals[i].data) + 1):
                 result.diagonals[i][j] = self.diagonals[i][j] + other.diagonals[i][j]
         
@@ -112,7 +110,7 @@ class TapeMatrix:
     def __sub__(self, other):
         """Вычитание ленточных матриц"""
         if self.size != other.size or self.bandwidth != other.bandwidth:
-            raise ValueError("Matrix sizes or bandwidths don't match for subtraction")
+            raise ValueError("Размеры матриц или ширины ленты не совпадают для вычитания")
         
         result = TapeMatrix(self.size, self.bandwidth)
         for i in range(self.bandwidth):
@@ -124,13 +122,13 @@ class TapeMatrix:
     def multiply_vector(self, vector):
         """Умножение матрицы на вектор"""
         if self.size != len(vector):
-            raise ValueError("Matrix and vector sizes don't match")
+            raise ValueError("Размеры матрицы и вектора не совпадают")
         
         result = v.Vector(size=self.size)
         
         for i in range(1, self.size + 1):
             sum_val = 0.0
-            # Only check columns within band
+            # Проверяем только столбцы внутри ленты
             min_col = max(1, i - self.k)
             max_col = min(self.size, i + self.k)
             
@@ -167,17 +165,17 @@ class TapeMatrix:
         # Fill main diagonal randomly
         self.diagonals[self.k].fill_random(low, high)
         
-        # For off-diagonal elements, generate random values for upper diagonals
-        # and copy them to corresponding lower diagonals to maintain symmetry
+        # Для внедиагональных элементов генерируем случайные значения для верхних диагоналей
+        # и копируем их в соответствующие нижние диагонали для сохранения симметрии
         for i in range(self.k):
-            # Generate random values for upper diagonal
-            upper_diag_idx = self.k + i + 1  # Index of upper diagonal
-            lower_diag_idx = self.k - i - 1  # Index of corresponding lower diagonal
+            # Генерируем случайные значения для верхней диагонали
+            upper_diag_idx = self.k + i + 1  # Индекс верхней диагонали
+            lower_diag_idx = self.k - i - 1  # Индекс соответствующей нижней диагонали
             
-            # Fill upper diagonal with random values
+            # Заполняем верхнюю диагональ случайными значениями
             self.diagonals[upper_diag_idx].fill_random(low, high)
             
-            # Copy the same values to the lower diagonal to maintain symmetry
+            # Копируем те же значения в нижнюю диагональ для сохранения симметрии
             for j in range(1, len(self.diagonals[lower_diag_idx].data) + 1):
                 self.diagonals[lower_diag_idx][j] = self.diagonals[upper_diag_idx][j]
 
@@ -210,37 +208,37 @@ class TapeMatrix:
 
     def _fill_random_diagonally_dominant(self, low, high):
         """Создание симметричной диагонально-доминантной матрицы"""
-        # First fill the matrix to be symmetric
-        # Fill main diagonal randomly
+        # Сначала заполняем матрицу, чтобы она была симметричной
+        # Заполняем главную диагональ случайными значениями
         self.diagonals[self.k].fill_random(low, high)
         
-        # For off-diagonal elements, generate random values for upper diagonals
-        # and copy them to corresponding lower diagonals to maintain symmetry
+        # Для внедиагональных элементов генерируем случайные значения для верхних диагоналей
+        # и копируем их в соответствующие нижние диагонали для сохранения симметрии
         for i in range(self.k):
-            # Generate random values for upper diagonal
-            upper_diag_idx = self.k + i + 1  # Index of upper diagonal
-            lower_diag_idx = self.k - i - 1  # Index of corresponding lower diagonal
+            # Генерируем случайные значения для верхней диагонали
+            upper_diag_idx = self.k + i + 1  # Индекс верхней диагонали
+            lower_diag_idx = self.k - i - 1  # Индекс соответствующей нижней диагонали
             
-            # Fill upper diagonal with random values
+            # Заполняем верхнюю диагональ случайными значениями
             self.diagonals[upper_diag_idx].fill_random(low, high)
             
-            # Copy the same values to the lower diagonal to maintain symmetry
+            # Копируем те же значения в нижнюю диагональ для сохранения симметрии
             for j in range(1, len(self.diagonals[lower_diag_idx].data) + 1):
                 self.diagonals[lower_diag_idx][j] = self.diagonals[upper_diag_idx][j]
         
-        # Make main diagonal dominant while maintaining symmetry
-        main_diag_idx = self.k  # Main diagonal is at center
+        # Делаем главную диагональ доминирующей, сохраняя симметрию
+        main_diag_idx = self.k  # Главная диагональ находится в центре
         for i in range(1, self.size + 1):
-            # Calculate sum of absolute values in row i (within band)
+            # Вычисляем сумму абсолютных значений в строке i (внутри ленты)
             row_sum = 0.0
             min_col = max(1, i - self.k)
             max_col = min(self.size, i + self.k)
-            
+             
             for j in range(min_col, max_col + 1):
-                if j != i:  # Skip diagonal element
+                if j != i:  # Пропускаем диагональный элемент
                     row_sum += abs(self[i, j])
-            
-            # Make diagonal element larger than row sum
+             
+            # Делаем диагональный элемент больше суммы строки
             self[i, i] = row_sum + random.uniform(1.0, 5.0)
     
     
@@ -290,8 +288,8 @@ class TapeMatrix:
                 
                 # Check we have correct number of diagonal lines
                 if len(lines) != bandwidth + 1:  # First line + bandwidth diagonals
-                    raise ValueError(f"Expected {bandwidth + 1} lines, got {len(lines)}. "
-                                f"For k={k}, bandwidth={bandwidth}, need {bandwidth} diagonal lines.")
+                    raise ValueError(f"Ожидалось {bandwidth + 1} строк, получено {len(lines)}. "
+                                f"Для k={k}, ширина ленты={bandwidth}, нужно {bandwidth} строк диагоналей.")
                 
                 # Resize matrix
                 self.size = n
@@ -312,24 +310,24 @@ class TapeMatrix:
                     
                     if len(values_str) != len(self.diagonals[diag_idx].data):
                         expected_len = len(self.diagonals[diag_idx].data)
-                        raise ValueError(f"Diagonal {diag_idx} (offset={diag_idx - k}): "
-                                    f"expected {expected_len} values, got {len(values_str)}")
+                        raise ValueError(f"Диагональ {diag_idx} (смещение={diag_idx - k}): "
+                                    f"ожидалось {expected_len} значений, получено {len(values_str)}")
                     
                     # Convert to float and store
                     values = list(map(float, values_str))
                     for i in range(len(values)):
-                        self.diagonals[diag_idx][i + 1] = values[i]  # Vector indexing starts from 1
+                        self.diagonals[diag_idx][i + 1] = values[i]  # Индексация вектора начинается с 1
                 
                 return self
         
         except FileNotFoundError:
-            print(f"File {filename} not found")
+            print(f"Файл {filename} не найден")
             return None
         except ValueError as e:
-            print(f"Error reading file: {e}")
+            print(f"Ошибка чтения файла: {e}")
             return None
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print(f"Неожиданная ошибка: {e}")
             return None
     
     def write_to_console(self):

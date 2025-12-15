@@ -63,7 +63,7 @@ class Vector:
 
 
     def write_to_file(self, filename):
-        """Write vector to file"""
+        """Записать вектор в файл"""
         with open(filename, 'w') as f:
             f.write("# Vector\n")
             for i, val in enumerate(self.data):
@@ -82,19 +82,19 @@ class Vector:
 
 
     def __getitem__(self, index):
-        """Access elements by index (starting from 1)"""
+        """Доступ к элементам по индексу (начиная с 1)"""
         if index < 1 or index > self.size:
-            raise IndexError("Index out of range")
+            raise IndexError("Индекс вне диапазона")
         return self.data[index - 1]
 
 
     def __setitem__(self, index, value):
-        """Set element value (indexing from 1)"""
+        """Установить значение элемента (индексация с 1)"""
         if index < 1 or index > self.size:
-            raise IndexError("Index out of range")
+            raise IndexError("Индекс вне диапазона")
         self.data[index - 1] = value
 
 
     def __len__(self):
-        """Return vector size"""
+        """Возвращает размер вектора"""
         return self.size

@@ -7,20 +7,21 @@ import experiment.ExperimentUtils as utils
 import experiment.DataGenerator as dg
 
 def main_experiment(exp_count: int, low=1.0, high=10.0, condition_type='random'):
+    """Основной эксперимент для анализа ошибок решения систем с ленточными матрицами"""
     data_dict = {
-        'system size': [],
-        'filling range': [],
-        'absolute error': [],
-        'relative error': [],
+        'system size': [],  # размер системы
+        'filling range': [],  # диапазон заполнения
+        'absolute error': [],  # абсолютная ошибка
+        'relative error': [],  # относительная ошибка
     }
 
     for size in np.logspace(1, 6, base=2).astype(int):
-        # Ensure bandwidth is odd and appropriate for the matrix size
+        # Убедимся, что ширина ленты нечетная и подходящая для размера матрицы
         bandwidth = min(size, 5)
         if bandwidth % 2 == 0:
-            bandwidth -= 1  # Make it odd
+            bandwidth -= 1 # Сделать нечетной
         if bandwidth < 3:
-            bandwidth = 3  # Minimum odd bandwidth
+            bandwidth = 3  # Минимальная нечетная ширина ленты
         
         for _ in range(exp_count):
             matrix, exact_x = dg.DataGenerator.generate_data(size, bandwidth, low, high, condition_type)
@@ -30,15 +31,16 @@ def main_experiment(exp_count: int, low=1.0, high=10.0, condition_type='random')
             if approximate_x is not None:
                 absolute_error, relative_error = utils.ExperimentUtils.calculate_error(exact_x, approximate_x)
                 
-                data_dict['system size'].append(size)
-                data_dict['filling range'].append([low, high])
-                data_dict['absolute error'].append(absolute_error)
-                data_dict['relative error'].append(relative_error)
+                data_dict['system size'].append(size)  # размер системы
+                data_dict['filling range'].append([low, high])  # диапазон заполнения
+                data_dict['absolute error'].append(absolute_error)  # абсолютная ошибка
+                data_dict['relative error'].append(relative_error)  # относительная ошибка
 
     return pd.DataFrame(data_dict)
 
 def print_test():
-    matrix = tm.TapeMatrix(5, 3)  # Initialize with correct bandwidth value (2*k+1 = 2*1+1 = 3)
+    """Тестирование решения системы с ленточной матрицей"""
+    matrix = tm.TapeMatrix(5, 3)  # Инициализировать с правильным значением ширины ленты (2*k+1 = 2*1+1 = 3)
     matrix.read_from_file("data/text.txt")
     
     exact_x = v.Vector(np.array([1.0, -1.0, 2.0, -1.0, 1.0]), size=5)
@@ -50,11 +52,11 @@ def print_test():
 
         matrix_to_print = matrix.to_full_matrix()
         print(matrix_to_print)
-        print(f"Exact x:         {exact_x}")
-        print(f"Calculated x:    {approximate_x}")
-        print(f"absolute_error:  {absolute_error:10e}, relative_error: {relative_error:10e}")
+        print(f"Точное x:        {exact_x}")
+        print(f"Вычисленное x:   {approximate_x}")
+        print(f"абсолютная_ошибка:  {absolute_error:10e}, относительная_ошибка: {relative_error:10e}")
     else:
-        print("Failed to solve the system.")
+        print("Не удалось решить систему.")
 
 
 if __name__ == '__main__':
@@ -70,11 +72,11 @@ if __name__ == '__main__':
     for condition_type, filename in configurations:
         dataframes = []
         for low, high in ranges:
-            print(f"Running experiment: condition_type={condition_type}, range=[{low}, {high}]")
+            print(f"Запуск эксперимента: condition_type={condition_type}, range=[{low}, {high}]")
             df = main_experiment(3, low, high, condition_type=condition_type)
             dataframes.append(df)
 
         final_df = pd.concat(dataframes, ignore_index=True)
         final_df.to_csv(f'data/{filename}', index=False)
 
-    print("All experiments completed. Results saved to the 'results' folder.")
+    print("Все эксперименты завершены. Результаты сохранены в папку 'results'.")

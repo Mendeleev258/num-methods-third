@@ -30,16 +30,16 @@ class ExperimentUtils:
             
             # Проверка на положительную определенность
             diag_val = matrix[i, i] - sum_val
-            if diag_val <= 1e-10:  # Allow for small numerical errors
+            if diag_val <= 1e-10:  # Учитываем небольшие численные ошибки
                 if diag_val < 0:
-                    # Check if it's just a numerical precision issue (very close to zero)
+                    # Проверяем, является ли это просто проблемой точности (очень близко к нулю)
                     if diag_val >= -1e-12:
-                        # Treat as zero and set to a small positive value
+                        # Считаем нулевым и устанавливаем малое положительное значение
                         diag_val = 1e-10
                     else:
-                        raise ValueError(f"Matrix is not positive definite at row {i}, diagonal value: {diag_val}")
+                        raise ValueError(f"Матрица не является положительно определенной в строке {i}, диагональное значение: {diag_val}")
                 else:
-                    # For very small positive values, set to small positive value
+                    # Для очень малых положительных значений устанавливаем малое положительное значение
                     diag_val = 1e-10
             
             L[i, i] = np.sqrt(diag_val)
@@ -53,7 +53,7 @@ class ExperimentUtils:
                     sum_val += L[i, j] * L[m, j]
                 
                 if abs(L[i, i]) < 1e-12:
-                    raise ZeroDivisionError(f"Zero diagonal element L[{i},{i}]")
+                    raise ZeroDivisionError(f"Нулевой диагональный элемент L[{i},{i}]")
                 
                 L[m, i] = (matrix[m, i] - sum_val) / L[i, i]
         
@@ -62,7 +62,7 @@ class ExperimentUtils:
     @staticmethod
     def is_symmetric(matrix, tolerance=1e-10):
         """
-        Check if the tape matrix is symmetric
+        Проверяет, является ли ленточная матрица симметричной
         """
         n = matrix.size
         for i in range(1, n + 1):
@@ -74,36 +74,36 @@ class ExperimentUtils:
     @staticmethod
     def solve_cholesky_band(matrix, exact_x):
         """
-        Solve Ax = b using Cholesky decomposition for band matrix
-        Steps:
-        1. A = L * L^T (Cholesky decomposition)
-        2. Solve L * y = b (forward substitution)
-        3. Solve L^T * x = y (backward substitution)
+        Решает Ax = b с использованием разложения Холецкого для ленточной матрицы
+        Шаги:
+        1. A = L * L^T (разложение Холецкого)
+        2. Решаем L * y = b (прямая подстановка)
+        3. Решаем L^T * x = y (обратная подстановка)
         """
-        # Check if matrix is symmetric (required for Cholesky decomposition)
+        # Проверяем, является ли матрица симметричной (требуется для разложения Холецкого)
         if not ExperimentUtils.is_symmetric(matrix):
-            print("Warning: Matrix is not symmetric. Cholesky decomposition requires a symmetric matrix.")
-            # Attempt to make it symmetric by averaging with its transpose
-            # Only operate within the band to avoid out-of-bounds errors
+            print("Предупреждение: Матрица не симметрична. Разложение Холецкого требует симметричную матрицу.")
+            # Пытаемся сделать её симметричной, усредняя с транспонированной
+            # Работаем только в пределах ленты, чтобы избежать ошибок выхода за границы
             for i in range(1, matrix.size + 1):
-                for j in range(i + 1, min(matrix.size + 1, i + matrix.k + 1)):  # Only within band
-                    if abs(j - i) <= matrix.k:  # Within bandwidth
+                for j in range(i + 1, min(matrix.size + 1, i + matrix.k + 1)):  # Только в пределах ленты
+                    if abs(j - i) <= matrix.k:  # В пределах ширины ленты
                         avg_val = (matrix[i, j] + matrix[j, i]) / 2
                         matrix[i, j] = avg_val
                         matrix[j, i] = avg_val
 
-        # Generate a known right-hand side vector b = A * exact_x
+        # Генерируем известный вектор правой части b = A * exact_x
         b = matrix @ exact_x
         n = matrix.size
         
-        # 1. Cholesky decomposition
+        # 1. Разложение Холецкого
         try:
             L = ExperimentUtils.band_cholesky(matrix)
         except ValueError as e:
-            print(f"Cholesky decomposition failed: {e}")
+            print(f"Разложение Холецкого не выполнено: {e}")
             return None
         
-        # 2. Forward substitution: L * y = b
+        # 2. Прямая подстановка: L * y = b
         y = v.Vector(size=n)
         
         for i in range(1, n + 1):
@@ -118,7 +118,7 @@ class ExperimentUtils:
             
             y[i] = (b[i] - sum_val) / L[i, i]
         
-        # 3. Backward substitution: L^T * x = y
+        # 3. Обратная подстановка: L^T * x = y
         approximate_x = v.Vector(size=n)
         
         for i in range(n, 0, -1):
@@ -126,7 +126,7 @@ class ExperimentUtils:
             min_j = min(n, i + L.k)
             
             for j in range(i + 1, min_j + 1):
-                # Note: L^T[i, j] = L[j, i]
+                # Примечание: L^T[i, j] = L[j, i]
                 sum_val += L[j, i] * approximate_x[j]
             
             if abs(L[i, i]) < 1e-12:
