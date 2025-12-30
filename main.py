@@ -10,32 +10,35 @@ def main_experiment(exp_count: int, low=1.0, high=10.0, condition_type='random')
     """Основной эксперимент для анализа ошибок решения систем с ленточными матрицами"""
     data_dict = {
         'system size': [],  # размер системы
+        'bandwidth': [],    # ширина ленты
         'filling range': [],  # диапазон заполнения
         'absolute error': [],  # абсолютная ошибка
         'relative error': [],  # относительная ошибка
     }
 
-    for size in np.logspace(1, 6, base=2).astype(int):
-        # Убедимся, что ширина ленты нечетная и подходящая для размера матрицы
-        bandwidth = min(size, 5)
-        if bandwidth % 2 == 0:
-            bandwidth -= 1 # Сделать нечетной
-        if bandwidth < 3:
-            bandwidth = 3  # Минимальная нечетная ширина ленты
+    for size in np.logspace(1, 10, base=2, num=10).astype(int):
         
-        for _ in range(exp_count):
-            matrix, exact_x = dg.DataGenerator.generate_data(size, bandwidth, low, high, condition_type)
-            
-            approximate_x = utils.ExperimentUtils.solve_cholesky_band(matrix, exact_x)
-            
-            if approximate_x is not None:
-                absolute_error, relative_error = utils.ExperimentUtils.calculate_error(exact_x, approximate_x)
-                
-                data_dict['system size'].append(size)  # размер системы
-                data_dict['filling range'].append([low, high])  # диапазон заполнения
-                data_dict['absolute error'].append(absolute_error)  # абсолютная ошибка
-                data_dict['relative error'].append(relative_error)  # относительная ошибка
+        for bandwidth in [size // 10, size * 4 // 10, size * 8 // 10]:
 
+            if bandwidth % 2 == 0:
+                bandwidth -= 1 # Сделать нечетной
+            if bandwidth < 3:
+                bandwidth = 3  # Минимальная нечетная ширина ленты
+            
+            for _ in range(exp_count):
+                matrix, exact_x = dg.DataGenerator.generate_data(size, bandwidth, low, high, condition_type)
+                
+                approximate_x = utils.ExperimentUtils.solve_cholesky_band(matrix, exact_x)
+                
+                if approximate_x is not None:
+                    absolute_error, relative_error = utils.ExperimentUtils.calculate_error(exact_x, approximate_x)
+                    
+                    data_dict['system size'].append(size)  # размер системы
+                    data_dict['bandwidth'].append(bandwidth) # ширина ленты
+                    data_dict['filling range'].append([low, high])  # диапазон заполнения
+                    data_dict['absolute error'].append(absolute_error)  # абсолютная ошибка
+                    data_dict['relative error'].append(relative_error)  # относительная ошибка
+    
     return pd.DataFrame(data_dict)
 
 def print_test():
@@ -60,9 +63,8 @@ def print_test():
 
 
 if __name__ == '__main__':
-    os.makedirs('results', exist_ok=True)
     
-    ranges = [(1.0, 1.0), (1.0, 10.0), (1.0, 100.0), (1.0, 1000.0)]
+    ranges = [(1.0, 10.0), (1.0, 100.0), (1.0, 1000.0)]
 
     configurations = [
         ('random', 'results_rand.csv'),
@@ -73,10 +75,10 @@ if __name__ == '__main__':
         dataframes = []
         for low, high in ranges:
             print(f"Запуск эксперимента: condition_type={condition_type}, range=[{low}, {high}]")
-            df = main_experiment(3, low, high, condition_type=condition_type)
+            df = main_experiment(1, low, high, condition_type=condition_type)
             dataframes.append(df)
 
         final_df = pd.concat(dataframes, ignore_index=True)
         final_df.to_csv(f'data/{filename}', index=False)
 
-    print("Все эксперименты завершены. Результаты сохранены в папку 'results'.")
+    print("Все эксперименты завершены. Результаты сохранены в папку 'data'.")
