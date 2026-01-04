@@ -16,7 +16,7 @@ def main_experiment(exp_count: int, low=1.0, high=10.0, condition_type='random')
         'relative error': [],  # относительная ошибка
     }
 
-    for size in np.logspace(1, 10, base=2, num=10).astype(int):
+    for size in np.logspace(2, 10, base=2, num=9).astype(int):
         
         for bandwidth in [size // 10, size * 4 // 10, size * 8 // 10]:
 
@@ -57,13 +57,11 @@ def print_test():
         print(matrix_to_print)
         print(f"Точное x:        {exact_x}")
         print(f"Вычисленное x:   {approximate_x}")
-        print(f"абсолютная_ошибка:  {absolute_error:10e}, относительная_ошибка: {relative_error:10e}")
+        print(f"absolute_error:  {absolute_error:10e}, relative_error: {relative_error:10e}")
     else:
         print("Не удалось решить систему.")
 
-
-if __name__ == '__main__':
-    
+def main():
     ranges = [(1.0, 10.0), (1.0, 100.0), (1.0, 1000.0)]
 
     configurations = [
@@ -82,3 +80,7 @@ if __name__ == '__main__':
         final_df.to_csv(f'data/{filename}', index=False)
 
     print("Все эксперименты завершены. Результаты сохранены в папку 'data'.")
+
+
+if __name__ == '__main__':
+    main()
